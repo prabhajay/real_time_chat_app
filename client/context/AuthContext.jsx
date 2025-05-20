@@ -4,13 +4,12 @@ import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 
-
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 axios.defaults.baseURL = backendUrl;
 
-export const AuthContext = createContext();
+const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [authUser, setAuthUser] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
@@ -83,9 +82,16 @@ export const AuthProvider = ({ children }) => {
   //connect socket function to handle socket connection and online users updates
 
   const connectSocket = (userData) => {
-    console.log("🔌 Connecting socket with userId:", userData?._id); 
+    if (!userData || !userData._id || socket?.connected) {
+      console.warn(
+        "Skipping socket connection - invalid userData or socket already connected"
+      );
 
-    if (!userData || socket?.connected) return;
+      return;
+    }
+    if (socket) {
+      socket.disconnect(); // disconnect old socket before connecting new one
+    }
     const newSocket = io(backendUrl, {
       query: {
         userId: userData._id,
@@ -96,16 +102,16 @@ export const AuthProvider = ({ children }) => {
     newSocket.on("getOnlineUsers", (userIds) => {
       setOnlineUsers(userIds);
     });
-   // setSocket(newSocket);
+    // setSocket(newSocket);
   };
-useEffect(() => {
-  if (token) {
-    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    checkAuth(); // ✅ now authorized
-  } else {
-    delete axios.defaults.headers.common["Authorization"];
-  }
-}, [token]);
+  useEffect(() => {
+    if (token) {
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      checkAuth(); // ✅ now authorized
+    } else {
+      delete axios.defaults.headers.common["Authorization"];
+    }
+  }, [token]);
 
   const value = {
     axios,
@@ -118,3 +124,4 @@ useEffect(() => {
   };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+export { AuthContext, AuthProvider };

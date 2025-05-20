@@ -26,11 +26,17 @@ const protectRoute = async (req, res, next) => {
   const token = authHeader.split(" ")[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // optionally: fetch user if needed
+    const user = await User.findById(decoded.userId).select("-password");
+    if (!user) {
+      return res.status(401).json({ success: false, message: "User not found" });
+    }
+    req.user = user;
     next();
   } catch (err) {
     return res.status(401).json({ success: false, message: "Invalid token" });
   }
+};
+
   /*
   try {
     const token = req.headers.token;
@@ -60,7 +66,6 @@ const protectRoute = async (req, res, next) => {
     console.error("Auth middleware error:", err.message);
     return res.status(401).json({ success: false, message: "Unauthorized: " + err.message });
   }*/
-};
 
 
 //controller to check if user is authenticated

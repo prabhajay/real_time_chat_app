@@ -15,7 +15,7 @@ export const getUsersForSidebar = async (req, res) => {
     const promises = filteredUsers.map(async (user) => {
       const messages = await Message.find({
         senderId: user._id,
-        receiveId: userId,
+        receiverId: userId,
         seen: false,
       });
       if (messages.length > 0) {
@@ -38,12 +38,12 @@ export const getMessages = async (req, res) => {
     const myId = req.user._id;
     const messages = await Message.find({
       $or: [
-        { senderId: myId, receiveId: selectedUserId },
-        { senderId: selectedUserId, receiveId: myId },
+        { senderId: myId, receiverId: selectedUserId },
+        { senderId: selectedUserId, receiverId: myId },
       ],
     });
     await Message.updateMany(
-      { senderId: selectedUserId, receiveId: myId },
+      { senderId: selectedUserId, receiverId: myId },
       { seen: true }
     );
     res.json({ success: true, messages });
@@ -70,8 +70,8 @@ export const markMessageAsSeen = async (req, res) => {
 
 export const sendMessage = async (req, res) => {
   try {
-    const { text, image } = req.params;
-    const receiveId = req.params.id;
+    const { text, image } = req.body;
+    const receiverId = req.params.id;
     const senderId = req.user._id;
     let imageUrl;
     if (image) {
@@ -80,12 +80,12 @@ export const sendMessage = async (req, res) => {
     }
     const newMessage = await Message.create({
       senderId,
-      receiveId,
+      receiverId,
       text,
       image: imageUrl,
     });
     //emit the new message to the receiver's socket
-    const receiverSocketId = userSocketMap[receiveId];
+    const receiverSocketId = userSocketMap[receiverId];
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", newMessage);
     }

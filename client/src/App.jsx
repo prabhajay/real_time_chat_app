@@ -6,7 +6,8 @@ import ProfilePage from "./pages/ProfilePage";
 import { Toaster } from "react-hot-toast";
 import { AuthContext } from "../context/AuthContext";
 const App = () => {
-  const { authUser } = useContext(AuthContext);
+  const { authUser,loading } = useContext(AuthContext);
+   if (loading) return null;
   return (
     <div className="bg-[url('./src/assets/bgImage.svg')] bg-contain">
       <Toaster />
