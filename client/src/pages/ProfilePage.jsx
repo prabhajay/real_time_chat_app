@@ -50,7 +50,7 @@ const ProfilePage = () => {
               src={
                 selectedImg
                   ? URL.createObjectURL(selectedImg)
-                  : assets.avatar_icon
+                  : authUser?.profilePic||assets.avatar_icon
               }
               alt=""
               className={`w-12 h-12 ${selectedImg && "rounded-full"}`}
@@ -81,7 +81,7 @@ const ProfilePage = () => {
           </button>
         </form>
         <img
-          className={`max-w-44 aspect-square rounded-full mx-10 max-sm:mt-10 ${selectedImg && 'rounded-full'}`} src={authUser?.ProfilePage || assets.logo_icon} alt=""
+          className={`max-w-44 aspect-square rounded-full mx-10 max-sm:mt-10 ${selectedImg && 'rounded-full'}`} src={authUser?.profilePic || assets.logo_icon} alt=""
         />
       </div>
     </div>
